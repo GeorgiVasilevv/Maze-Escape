@@ -42,6 +42,16 @@ void readCharArrayWithSpaces() {
 	in.close();
 }
 
+int fCreateUser(char* username) {
+	std::ofstream out(username);
+
+	if (!out.is_open() || username == nullptr) return -1;
+
+	out << "dsadas" << endl;
+	out.close();
+	return 0;
+}
+
 // Clear console
 void clearConsole() {
 	cout << "\033[;H"; // Moves cursor to the top left
@@ -55,7 +65,7 @@ void clearInputBuffer() {
 
 	cin.clear();	// clears errors flags from the cin
 	cin.sync();		// discard unread characters from the input buffer
-	cin.ignore();	// discard characters from the input buffer
+	cin.ignore(1000, '\n');	// discard characters from the input buffer
 }
 
 //void levelOne() {
@@ -82,9 +92,42 @@ void clearInputBuffer() {
 //	}
 //}
 
+bool validateAccessInput(char ch) {
+	return ch != 'r' && ch != 'l';
+}
+
+void printStartingScreen() {
+	cout << "Welcome to the Maze Escape game" << endl;
+	cout << "-------------------------------" << endl;
+	cout << "  Type 'r' to Register." << endl;
+	cout << "  Type 'l' to Login." << endl;
+	cout << "-------------------------------" << endl;
+
+}
+
 int main()
 {
-	
+
+	printStartingScreen();
+
+	char inp;
+	cin >> inp;
+	while (validateAccessInput(inp))
+	{
+		clearConsole();
+		printStartingScreen();
+
+		cout << "Invalid input! Try again." << endl;
+		clearInputBuffer();
+		cin >> inp;
+	}
+
+	if (inp == 'r')
+	{
+		char username[20];
+		cin >> username;
+		fCreateUser(username);
+	}
 
 }
 
