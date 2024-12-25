@@ -2,25 +2,59 @@
 #include <fstream>
 using namespace std;
 
+
 const char UPPER_FOLDER[] = "../test.txt";
 
 const char FILE_NAME[] = "PractFiles.cpp";
 
 const int BUFFER_SIZE = 1024;
 
+const int NAME_MAX_LENGTH = 50;
+
+struct Position {
+	unsigned short rowIndex;
+	unsigned short colIndex;
+};
+
+struct Map {
+	int rowsCount;
+	int colsCount;
+	char** maze;
+	Position playerPosition;
+};
+
+struct Game {
+	bool keyFound;
+	int coinsCollected;
+	int totalCoins;
+	Map map;
+};
+
+struct Player {
+	char name[NAME_MAX_LENGTH];
+	int level;
+	int lives;
+	int coins;
+	Game highestLevelGame;
+};
+
+void customStrcat(char* destination, const char* source) {
+	
+}
+
 // read the source code from your cpp and print in console
 void printSourceCode() {
-	std::ifstream in(FILE_NAME);
-
-	if (!in.is_open()) {
-		cout << "Error";
-		return;
-	}
+	std::ifstream in("dsadas.txt");
+	
+		if (!in.is_open()) {
+			cout << "Error";
+			return;
+		}
 
 	while (!in.eof()) {
 		char buffer[BUFFER_SIZE];
 		in.getline(buffer, BUFFER_SIZE);
-		cout << buffer;
+		cout << buffer << endl;
 	}
 
 	in.close();
@@ -42,8 +76,9 @@ void readCharArrayWithSpaces() {
 	in.close();
 }
 
-int fCreateUser(char* username) {
-	std::ofstream out(username);
+int fCreateUser(const char* username) {
+	char dest[] = "../Users/";
+	std::ofstream out((dest, username));
 
 	if (!out.is_open() || username == nullptr) return -1;
 
@@ -52,7 +87,6 @@ int fCreateUser(char* username) {
 	return 0;
 }
 
-// Clear console
 void clearConsole() {
 	cout << "\033[;H"; // Moves cursor to the top left
 	cout << "\033[J"; // Clears the console
@@ -68,29 +102,20 @@ void clearInputBuffer() {
 	cin.ignore(1000, '\n');	// discard characters from the input buffer
 }
 
-//void levelOne() {
-//	const int ROWS = 10;
-//	const int COLS = 15;
-//
-//	char maze[ROWS][COLS] = {
-//	{ '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' },
-//	{ '#', ' ', ' ', ' ', '@', ' ', 'C', ' ', '%', ' ', 'C', ' ', ' ', 'C', '#' },
-//	{ '#', '#', '#', '#', ' ', 'C', ' ', '#', ' ', 'C', ' ', '#', '#', ' ', '#' },
-//	{ '#', ' ', ' ', ' ', '#', '#', '#', ' ', 'C', ' ', '#', ' ', ' ', ' ', '#' },
-//	{ '#', ' ', '%', ' ', ' ', '#', ' ', ' ', 'C', ' ', '%', ' ', 'C', ' ', '#' },
-//	{ '#', 'C', ' ', 'C', ' ', 'C', ' ', 'C', ' ', '#', ' ', '#', ' ', ' ', '#' },
-//	{ '#', 'C', ' ', 'C', ' ', '#', '#', '#', ' ', ' ', '#', 'C', ' ', 'C', '#' },
-//	{ '#', 'C', ' ', ' ', 'C', ' ', 'C', ' ', '&', ' ', ' ', 'C', ' ', 'C', '#' },
-//	{ '#', 'C', ' ', '%', ' ', ' ', ' ', 'X', ' ', 'C', ' ', '%', ' ', ' ', '#' },
-//	{ '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' } };
-//
-//	for (int i = 0; i < 10; i++) {
-//		for (int j = 0; j < 15; j++) {
-//			cout << maze[i][j] << " ";
-//		}
-//		cout << endl;
-//	}
-//}
+void loadLevelOne() {
+	const int ROWS = 10;
+	const int COLS = 15;
+
+	char maze[ROWS][COLS];
+
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 15; j++) {
+			cout << maze[i][j];
+		}
+		cout << endl;
+	}
+}
+
 
 bool validateAccessInput(char ch) {
 	return ch != 'r' && ch != 'l';
@@ -107,7 +132,7 @@ void printStartingScreen() {
 
 int main()
 {
-
+	
 	printStartingScreen();
 
 	char inp;
@@ -129,6 +154,7 @@ int main()
 		fCreateUser(username);
 	}
 
+	return 0;
 }
 
 /**
