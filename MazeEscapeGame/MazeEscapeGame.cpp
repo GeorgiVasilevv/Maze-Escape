@@ -1,8 +1,91 @@
 #include <iostream>
+#include <fstream>
+using namespace std;
+
+const char UPPER_FOLDER[] = "../test.txt";
+
+const char FILE_NAME[] = "PractFiles.cpp";
+
+const int BUFFER_SIZE = 1024;
+
+// read the source code from your cpp and print in console
+void printSourceCode() {
+	std::ifstream in(FILE_NAME);
+
+	if (!in.is_open()) {
+		cout << "Error";
+		return;
+	}
+
+	while (!in.eof()) {
+		char buffer[BUFFER_SIZE];
+		in.getline(buffer, BUFFER_SIZE);
+		cout << buffer;
+	}
+
+	in.close();
+}
+
+void readCharArrayWithSpaces() {
+	std::ofstream out(FILE_NAME);
+
+	char test[] = "abc de";
+	out << test;
+
+	out.close();
+
+	std::ifstream in(FILE_NAME);
+
+	char test2[BUFFER_SIZE];
+	in.getline(test2, BUFFER_SIZE);
+
+	in.close();
+}
+
+// Clear console
+void clearConsole() {
+	cout << "\033[;H"; // Moves cursor to the top left
+	cout << "\033[J"; // Clears the console
+}
+
+// Remove all error flags and characters from the input buffer
+void clearInputBuffer() {
+	// because of using both getline and cin we have to cin.ignore;
+	// cin leaves the newline character in the stream which will be read as input from the getline
+
+	cin.clear();	// clears errors flags from the cin
+	cin.sync();		// discard unread characters from the input buffer
+	cin.ignore();	// discard characters from the input buffer
+}
+
+//void levelOne() {
+//	const int ROWS = 10;
+//	const int COLS = 15;
+//
+//	char maze[ROWS][COLS] = {
+//	{ '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' },
+//	{ '#', ' ', ' ', ' ', '@', ' ', 'C', ' ', '%', ' ', 'C', ' ', ' ', 'C', '#' },
+//	{ '#', '#', '#', '#', ' ', 'C', ' ', '#', ' ', 'C', ' ', '#', '#', ' ', '#' },
+//	{ '#', ' ', ' ', ' ', '#', '#', '#', ' ', 'C', ' ', '#', ' ', ' ', ' ', '#' },
+//	{ '#', ' ', '%', ' ', ' ', '#', ' ', ' ', 'C', ' ', '%', ' ', 'C', ' ', '#' },
+//	{ '#', 'C', ' ', 'C', ' ', 'C', ' ', 'C', ' ', '#', ' ', '#', ' ', ' ', '#' },
+//	{ '#', 'C', ' ', 'C', ' ', '#', '#', '#', ' ', ' ', '#', 'C', ' ', 'C', '#' },
+//	{ '#', 'C', ' ', ' ', 'C', ' ', 'C', ' ', '&', ' ', ' ', 'C', ' ', 'C', '#' },
+//	{ '#', 'C', ' ', '%', ' ', ' ', ' ', 'X', ' ', 'C', ' ', '%', ' ', ' ', '#' },
+//	{ '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' } };
+//
+//	for (int i = 0; i < 10; i++) {
+//		for (int j = 0; j < 15; j++) {
+//			cout << maze[i][j] << " ";
+//		}
+//		cout << endl;
+//	}
+//}
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	
+
 }
 
 /**
