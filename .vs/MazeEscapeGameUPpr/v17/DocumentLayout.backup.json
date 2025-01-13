@@ -5,6 +5,14 @@
     {
       "AbsoluteMoniker": "D:0:0:{1687BFDF-A9E7-43B1-B999-9C1A3B1C456C}|MazeEscapeGame\\MazeEscapeGame.vcxproj|C:\\Users\\User\\Maze-Escape\\MazeEscapeGame\\MazeEscapeGame.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{1687BFDF-A9E7-43B1-B999-9C1A3B1C456C}|MazeEscapeGame\\MazeEscapeGame.vcxproj|solutionrelative:MazeEscapeGame\\MazeEscapeGame.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1687BFDF-A9E7-43B1-B999-9C1A3B1C456C}|MazeEscapeGame\\MazeEscapeGame.vcxproj|C:\\Users\\User\\Maze-Escape\\MazeEscapeGame\\Map.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1687BFDF-A9E7-43B1-B999-9C1A3B1C456C}|MazeEscapeGame\\MazeEscapeGame.vcxproj|solutionrelative:MazeEscapeGame\\Map.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1687BFDF-A9E7-43B1-B999-9C1A3B1C456C}|MazeEscapeGame\\MazeEscapeGame.vcxproj|C:\\Users\\User\\Maze-Escape\\MazeEscapeGame\\Models.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{1687BFDF-A9E7-43B1-B999-9C1A3B1C456C}|MazeEscapeGame\\MazeEscapeGame.vcxproj|solutionrelative:MazeEscapeGame\\Models.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,7 +22,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -26,13 +34,39 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Map.cpp",
+              "DocumentMoniker": "C:\\Users\\User\\Maze-Escape\\MazeEscapeGame\\Map.cpp",
+              "RelativeDocumentMoniker": "MazeEscapeGame\\Map.cpp",
+              "ToolTip": "C:\\Users\\User\\Maze-Escape\\MazeEscapeGame\\Map.cpp",
+              "RelativeToolTip": "MazeEscapeGame\\Map.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-01-13T12:34:28.421Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Models.cpp",
+              "DocumentMoniker": "C:\\Users\\User\\Maze-Escape\\MazeEscapeGame\\Models.cpp",
+              "RelativeDocumentMoniker": "MazeEscapeGame\\Models.cpp",
+              "ToolTip": "C:\\Users\\User\\Maze-Escape\\MazeEscapeGame\\Models.cpp",
+              "RelativeToolTip": "MazeEscapeGame\\Models.cpp",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABcAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-01-13T11:41:46.813Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 0,
               "Title": "MazeEscapeGame.cpp",
               "DocumentMoniker": "C:\\Users\\User\\Maze-Escape\\MazeEscapeGame\\MazeEscapeGame.cpp",
               "RelativeDocumentMoniker": "MazeEscapeGame\\MazeEscapeGame.cpp",
               "ToolTip": "C:\\Users\\User\\Maze-Escape\\MazeEscapeGame\\MazeEscapeGame.cpp",
               "RelativeToolTip": "MazeEscapeGame\\MazeEscapeGame.cpp",
-              "ViewState": "AgIAABgAAAAAAAAAAAAnwOcAAAAuAAAAAAAAAA==",
+              "ViewState": "AgIAAKAAAAAAAAAAAAAAALIAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-12-24T16:31:59.884Z",
               "EditorCaption": ""
