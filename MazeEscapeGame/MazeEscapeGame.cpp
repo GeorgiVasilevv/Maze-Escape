@@ -10,7 +10,6 @@ const char FILE_NAME[] = "PractFiles.cpp";
 
 const int BUFFER_SIZE = 1024;
 
-const int USERNAME_MAX_LEN = 50;
 
 void clearConsole() {
 	cout << "\033[;H"; // Moves cursor to the top left
@@ -38,6 +37,18 @@ int my_StrLen(char* str) {
 	return destLen;
 }
 
+int my_atoi(char* str) {
+	int res = 0;
+	int strLen = my_StrLen(str);
+
+	for (int i = 0; i < strLen; i++)
+	{
+		res = res * 10 + str[i] - '0';
+	}
+
+	return res;
+}
+
 char* customStrcat(char* destination, const char* source) {
 	if (destination == nullptr || source == nullptr)
 	{
@@ -58,36 +69,63 @@ char* customStrcat(char* destination, const char* source) {
 	return destination;
 }
 
-// read the source code from your cpp and print in console
-void printSourceCode() {
-	std::ifstream in("dsadas.txt");
+Player loadUserData(char* username) {
+	Player pl = {};
 
-	if (!in.is_open()) {
-		cout << "Error";
-		return;
+	char dest[150] = "Users/";
+	std::ifstream in(customStrcat(dest, username));
+	if (!in.is_open())
+	{
+		return pl;
 	}
 
-	while (!in.eof()) {
-		char buffer[BUFFER_SIZE];
-		in.getline(buffer, BUFFER_SIZE);
-		cout << buffer << endl;
-	}
+
+	char buffer[BUFFER_SIZE];
+
+	in.getline(buffer, BUFFER_SIZE);
+	pl.level = my_atoi(buffer);
+
+	in.getline(buffer, BUFFER_SIZE);
+	pl.lives = my_atoi(buffer);
+
+	in.getline(buffer, BUFFER_SIZE);
+	pl.coins = my_atoi(buffer);
+
+	in.getline(buffer, BUFFER_SIZE);
+	pl.game.keyFound = my_atoi(buffer);
+
+	in.getline(buffer, BUFFER_SIZE);
+	pl.game.coinsCollected = my_atoi(buffer);
+
+	in.getline(buffer, BUFFER_SIZE);
+	pl.game.totalCoins = my_atoi(buffer);
+
+	in.getline(buffer, BUFFER_SIZE);
+	pl.game.treasureFound = my_atoi(buffer);
 
 	in.close();
+	return pl;
 }
 
 int fCreateUser(char* username) {
 
 	if (username == nullptr) return -1;
 
-	char dest[150] = "Users/";
-	char* destination = customStrcat(dest, username);
+	char dest[150] = "Users/"; // TODO fix this
+	char* destination = customStrcat(dest, username); // TODO fix this
 
 	std::ofstream out(dest);
 
 	if (!out.is_open()) return -1;
 
-	out << "" << endl;
+	Player pl = {};
+	out << pl.level << endl;
+	out << pl.lives << endl;
+	out << pl.coins << endl;
+	out << pl.game.keyFound << endl;
+	out << pl.game.coinsCollected << endl;
+	out << pl.game.totalCoins << endl;
+	out << pl.game.treasureFound << endl;
 	out.close();
 	return 0;
 }
@@ -100,9 +138,10 @@ bool validateAccessInput(char ch) {
 bool validateUsernameLen(char* username) {
 	return my_StrLen(username) > USERNAME_MAX_LEN;
 }
+
 bool validateExistingUser(char* username) {
-	char dest[150] = "Users/";
-	std::ifstream in(customStrcat(dest, customStrcat(username, ".txt")));
+	char dest[150] = "Users/"; // TODO fix this
+	std::ifstream in(customStrcat(dest, username)); // TODO fix this
 	if (in.is_open()) {
 		in.close();
 		return true;
@@ -118,11 +157,12 @@ void printStartingScreen() {
 	cout << "  Type 'r' to Register." << endl;
 	cout << "  Type 'l' to Login." << endl;
 	cout << "-------------------------------" << endl;
-
 }
 
-void handleUserLogging() {
 
+Player handleUserLogging() {
+
+	clearConsole();
 	printStartingScreen();
 
 	char inp;
@@ -139,12 +179,11 @@ void handleUserLogging() {
 	}
 
 	Player player = {};
-
-	if (inp == 'r')
+	while (inp == 'r')
 	{
 		cout << "Username: ";
 
-		char username[120];
+		char username[120]; // TODO fix this
 		cin >> username;
 
 		while (validateUsernameLen(username))
@@ -159,12 +198,17 @@ void handleUserLogging() {
 		}
 
 		fCreateUser(username);
+
+		cout << "User created successfully!" << endl;
+		cout << endl;
+		printStartingScreen();
+		cin >> inp;
 	}
-	else if (inp == 'l')
+	if (inp == 'l')
 	{
 		cout << "Username: ";
 
-		char username[121];
+		char username[121]; // TODO fix this
 		cin >> username;
 
 		while (validateUsernameLen(username))
@@ -173,15 +217,17 @@ void handleUserLogging() {
 			cin >> username;
 		}
 
-		while (!validateExistingUser(username))
+		while (!validateExistingUser(username)) //TODO there is a problem when user tries to log in but there is no users in the database
 		{
 			cout << "User doesn't exist" << endl;
 			cin >> username;
 		}
 
-		player = loadUserData();
+		player = loadUserData(username);
+		cout << "User logged-in successfully!" << endl;
+		cout << endl;
 	}
-
+	return player;
 }
 int main()
 {
@@ -197,7 +243,7 @@ int main()
 	return 0;*/
 
 
-	handleUserLogging();
+	Player user = handleUserLogging();
 
 	return 0;
 }

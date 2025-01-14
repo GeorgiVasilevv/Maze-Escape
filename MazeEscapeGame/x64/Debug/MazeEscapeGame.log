@@ -1,2 +1,5 @@
 ﻿  MazeEscapeGame.cpp
+C:\Users\User\Maze-Escape\MazeEscapeGame\Models.cpp(1,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  (compiling source file 'MazeEscapeGame.cpp')
+  
   MazeEscapeGame.vcxproj -> C:\Users\User\Maze-Escape\x64\Debug\MazeEscapeGame.exe

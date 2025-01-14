@@ -1,5 +1,4 @@
-const int NAME_MAX_LENGTH = 50;
-const int DEFAULT_LIVES = 3;
+#include "Constants.cpp";
 
 struct Position {
 	unsigned short rowIndex;
@@ -23,7 +22,7 @@ struct Game {
 };
 
 struct Player {
-	char name[NAME_MAX_LENGTH];
+	char name[USERNAME_MAX_LEN];
 	int level = 1;
 	int lives = DEFAULT_LIVES;
 	int coins = 0;

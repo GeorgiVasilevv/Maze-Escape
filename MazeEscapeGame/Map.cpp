@@ -2,7 +2,6 @@
 #include <fstream>
 #include "Models.cpp"
 
-const char PLAYER_SYMBOL = '@';
 
 void deleteMap(char** matrix, int rows)
 {
@@ -53,6 +52,7 @@ char** initMap(int rowCount, int colCount)
 	return matrix;
 }
 
+//TODO Look into this
 char** readMap(const char* mapPath, int rowCount, int colCount)
 {
 	if (mapPath == nullptr) return nullptr;

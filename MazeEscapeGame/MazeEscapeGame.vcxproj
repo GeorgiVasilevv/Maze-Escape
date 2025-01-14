@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="MazeEscapeGame.cpp" />
     <ClCompile Include="Models.cpp" />
