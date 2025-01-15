@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include "Models.cpp"
-#include "Map.cpp"
 using namespace std;
 
 
@@ -228,18 +227,137 @@ Player handleUserLogging() {
 	}
 	return player;
 }
+
+void deleteMap(char** matrix, int rows)
+{
+	if (matrix == nullptr) return;
+
+	for (int i = 0; i < rows; i++)
+	{
+		delete[] matrix[i];
+	}
+
+	delete[] matrix;
+}
+
+void printMap(const Map& map)
+{
+	if (map.maze == nullptr)
+	{
+		return;
+	}
+
+	for (int i = 0; i < map.rowsCount; i++)
+	{
+		for (int j = 0; j < map.colsCount; j++)
+		{
+			if (i == map.playerPosition.colIndex &&
+				j == map.playerPosition.rowIndex)
+			{
+				std::cout << PLAYER_SYMBOL;
+			}
+			else {
+				std::cout << map.maze[i][j];
+			}
+			std::cout << " ";
+		}
+		std::cout << std::endl;
+	}
+}
+
+char** initMap(int rowCount, int colCount)
+{
+	char** matrix = new char* [rowCount];
+
+	for (int i = 0; i < rowCount; i++)
+	{
+		matrix[i] = new char[colCount];
+	}
+
+	return matrix;
+}
+
+//TODO Look into this
+Game readMap(const char* mapPath, int rowCount, int colCount, int level)
+{
+	Game game = {};
+	if (level > MAX_LEVEL)
+	{
+		return game;
+	}
+
+	if (mapPath == nullptr) return game;
+
+	std::ifstream in(mapPath);
+	if (!in.is_open())
+	{
+		return game;
+	}
+
+
+	game.level = level;
+	Map map = {};
+	map.rowsCount = rowCount;
+	map.colsCount = colCount;
+
+	char** maze = initMap(rowCount, colCount);
+	map.maze = maze;
+
+	int rowIdx = 0;
+
+
+	for (short i = 0; i < rowCount; i++)
+	{
+		for (short j = 0; j < colCount; j++)
+		{
+			char ch;
+			do
+			{
+				in.get(ch);
+			} while (ch == '\n');
+
+			map.maze[i][j] = ch;
+			if (ch == COIN_SYMBOL)
+			{
+				game.totalCoins++;
+			}
+		}
+	}
+
+	game.map = map;
+	in.close();
+
+	return game;
+}
+
+void printGameInfo(Game game, Player player) {
+	std::cout << "Level: " << game.level << std::endl;
+	std::cout << "Lives: " << player.lives << std::endl;
+	std::cout << "Coins: " << game.coinsCollected << std::endl;
+	std::cout << "Key: ";
+
+	if (game.keyFound)
+	{
+		std::cout << "Found" << std::endl;
+	}
+	else {
+		std::cout << "Not found" << std::endl;
+	}
+}
+
 int main()
 {
 
 
-	/*const char mapPath[] = "Maps/Level 1/Map 1.txt";
+	const char mapPath[] = "Maps/Level 1/Map 1.txt";
 	const int rows = 10;
 	const int cols = 15;
+	const int level = 1;
 
-	char** pMatrix = readMap(mapPath, rows, cols);
-	printMap(pMatrix, rows, cols);
-	deleteMap(pMatrix, rows);
-	return 0;*/
+	Game game = readMap(mapPath, rows, cols, level);
+	printMap(game.map);
+	deleteMap(game.map.maze, rows);
+	return 0;
 
 
 	/*Player user = handleUserLogging();*/
