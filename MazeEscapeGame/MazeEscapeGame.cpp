@@ -3,13 +3,11 @@
 #include "Models.cpp"
 using namespace std;
 
-
 const char UPPER_FOLDER[] = "../test.txt";
 
 const char FILE_NAME[] = "PractFiles.cpp";
 
 const int BUFFER_SIZE = 1024;
-
 
 void clearConsole() {
 	cout << "\033[;H"; // Moves cursor to the top left
@@ -89,6 +87,11 @@ bool validateExistingUser(char* username) {
 	return false;
 }
 
+bool validateCoordinate(const Position& position, int rows, int cols)
+{
+	return position.rowIndex < rows && position.colIndex < cols;
+}
+
 Player loadUserData(char* username) {
 	Player pl = {};
 
@@ -101,7 +104,6 @@ Player loadUserData(char* username) {
 
 
 	char buffer[BUFFER_SIZE];
-	int value = in.get();
 	in.getline(buffer, BUFFER_SIZE);
 	pl.level = my_atoi(buffer);
 
@@ -222,9 +224,9 @@ Player handleUserLogging() {
 		}
 
 		player = loadUserData(username);
-		cout << "User logged-in successfully!" << endl;
-		cout << endl;
+
 	}
+	clearConsole();
 	return player;
 }
 
@@ -251,8 +253,8 @@ void printMap(const Map& map)
 	{
 		for (int j = 0; j < map.colsCount; j++)
 		{
-			if (i == map.playerPosition.colIndex &&
-				j == map.playerPosition.rowIndex)
+			if (i == map.playerPosition.rowIndex &&
+				j == map.playerPosition.colIndex)
 			{
 				std::cout << PLAYER_SYMBOL;
 			}
@@ -277,7 +279,6 @@ char** initMap(int rowCount, int colCount)
 	return matrix;
 }
 
-//TODO Look into this
 Game readMap(const char* mapPath, int rowCount, int colCount, int level)
 {
 	Game game = {};
@@ -311,12 +312,23 @@ Game readMap(const char* mapPath, int rowCount, int colCount, int level)
 		for (short j = 0; j < colCount; j++)
 		{
 			char ch;
-			do
+			in.get(ch);
+
+			if (ch == '\n')
 			{
 				in.get(ch);
-			} while (ch == '\n');
+			}
 
-			map.maze[i][j] = ch;
+			if (ch == PLAYER_SYMBOL)
+			{
+				map.playerPosition.rowIndex = i;
+				map.playerPosition.colIndex = j;
+
+				map.maze[i][j] = SPACE_SYMBOL;
+			}
+			else {
+				map.maze[i][j] = ch;
+			}
 			if (ch == COIN_SYMBOL)
 			{
 				game.totalCoins++;
@@ -345,24 +357,188 @@ void printGameInfo(Game game, Player player) {
 	}
 }
 
+void printGameRules() {
+	std::cout << "Use the keys to move:" << std::endl;
+	std::cout << " W - UP" << std::endl;
+	std::cout << " A - LEFT" << std::endl;
+	std::cout << " S - DOWN" << std::endl;
+	std::cout << " D - RIGHT" << std::endl;
+}
+
+char toLower(char ch) {
+	if (ch >= 'A' && ch <= 'Z') {
+		return ch + 32;
+	}
+	return ch;
+}
+
+bool movePlayer(Position& position, char command) {
+	command = toLower(command);
+	if (command == 'w')
+	{
+		position.rowIndex--;
+	}
+	else if (command == 'a') {
+		position.colIndex--;
+	}
+	else if (command == 's') {
+		position.rowIndex++;
+	}
+	else if (command == 'd') {
+		position.colIndex++;
+	}
+	else {
+		return false;
+	}
+	return true;
+}
+Position findNextPortal(const Map& map, const Position& currPortal)
+{
+	Position nextPortal = {};
+
+	if (map.maze == nullptr)
+	{
+		return nextPortal;
+	}
+
+	int startRow, startCol;
+
+	if (currPortal.rowIndex == map.rowsCount - 1
+		&& currPortal.colIndex == map.colsCount - 1)
+	{
+		startRow = 0;
+		startCol = 0;
+	}
+	else
+	{
+		startRow = currPortal.rowIndex;
+		startCol = currPortal.colIndex + 1;
+	}
+
+	bool portalFound = false;
+	for (int i = startRow; i < map.rowsCount; i++)
+	{
+		if (i != startRow)
+		{
+			startCol = 0;
+		}
+
+		for (int j = startCol; j < map.colsCount; j++)
+		{
+			if (map.maze[i][j] == PORTAL_SYMBOL)
+			{
+				portalFound = true;
+				nextPortal.rowIndex = i;
+				nextPortal.colIndex = j;
+				break;
+			}
+
+			if (i == map.rowsCount - 1 && j == map.colsCount - 1)
+			{
+				i = 0;
+				j = -1;
+			}
+		}
+
+		if (portalFound)
+		{
+			break;
+		}
+	}
+
+	return nextPortal;
+}
+
+void updateMaze(Player& player, Game& game, char command) {
+	char** maze = game.map.maze;
+	Position& pos = game.map.playerPosition;
+	Position newPos = pos;
+
+	if (maze == nullptr)
+	{
+		return;
+	}
+	if (!movePlayer(newPos, command))
+	{
+		return;
+	}
+	if (!validateCoordinate(newPos, game.map.rowsCount, game.map.colsCount))
+	{
+		return;
+	}
+
+
+	switch (maze[newPos.rowIndex][newPos.colIndex])
+	{
+	case WALL_SYMBOL:
+		player.lives--;
+		break;
+
+	case SPACE_SYMBOL:
+		pos = newPos;
+		break;
+
+	case COIN_SYMBOL:
+		game.coinsCollected++;
+		pos = newPos;
+		maze[newPos.rowIndex][pos.colIndex] = SPACE_SYMBOL;
+		break;
+
+	case KEY_SYMBOL:
+		game.keyFound = true;
+		pos = newPos;
+		maze[newPos.rowIndex][pos.colIndex] = SPACE_SYMBOL;
+		break;
+
+	case PORTAL_SYMBOL:
+		pos = findNextPortal(game.map, newPos);
+		break;
+
+	case TREASURE_SYMBOL:
+		pos = newPos;
+
+		if (game.keyFound)
+		{
+			game.treasureFound = true;
+		}
+		break;
+	}
+}
+
+
 int main()
 {
-
-
 	const char mapPath[] = "Maps/Level 1/Map 1.txt";
 	const int rows = 10;
 	const int cols = 15;
 	const int level = 1;
 
+	Player pl = handleUserLogging();
+
+	cout << "User logged-in successfully!" << endl;
+	cout << endl;
+
 	Game game = readMap(mapPath, rows, cols, level);
 	printMap(game.map);
+
+	printGameRules();
+	char inp;
+	cin >> inp;
+
+	while (inp != 'E')
+	{
+		updateMaze(pl, game, inp);
+		clearConsole();
+		printMap(game.map);
+
+		cin >> inp;
+	}
+
 	deleteMap(game.map.maze, rows);
+
+
 	return 0;
 
-
-	/*Player user = handleUserLogging();*/
-
-	return 0;
 }
 
 /**
