@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include "Models.cpp"
-using namespace std;
 
 const char UPPER_FOLDER[] = "../test.txt";
 
@@ -10,8 +9,8 @@ const char FILE_NAME[] = "PractFiles.cpp";
 const int BUFFER_SIZE = 1024;
 
 void clearConsole() {
-	cout << "\033[;H"; // Moves cursor to the top left
-	cout << "\033[J"; // Clears the console
+	std::cout << "\033[;H"; // Moves cursor to the top left
+	std::cout << "\033[J"; // Clears the console
 }
 
 // Remove all error flags and characters from the input buffer
@@ -19,9 +18,9 @@ void clearInputBuffer() {
 	// because of using both getline and cin we have to cin.ignore;
 	// cin leaves the newline character in the stream which will be read as input from the getline
 
-	cin.clear();	// clears errors flags from the cin
-	cin.sync();		// discard unread characters from the input buffer
-	cin.ignore(1000, '\n');	// discard characters from the input buffer
+	std::cin.clear();	// clears errors flags from the cin
+	std::cin.sync();		// discard unread characters from the input buffer
+	std::cin.ignore(1000, '\n');	// discard characters from the input buffer
 }
 
 int my_StrLen(char* str) {
@@ -65,6 +64,13 @@ char* customStrcat(char* destination, const char* source) {
 	destination[destLen] = '\0';
 
 	return destination;
+}
+
+char toLower(char ch) {
+	if (ch >= 'A' && ch <= 'Z') {
+		return ch + 32;
+	}
+	return ch;
 }
 
 bool validateAccessInput(char ch) {
@@ -141,23 +147,23 @@ int fCreateUser(char* username) {
 	if (!out.is_open()) return -1;
 
 	Player pl = {};
-	out << pl.level << endl;
-	out << pl.lives << endl;
-	out << pl.coins << endl;
-	out << pl.game.keyFound << endl;
-	out << pl.game.coinsCollected << endl;
-	out << pl.game.totalCoins << endl;
-	out << pl.game.treasureFound << endl;
+	out << pl.level << std::endl;
+	out << pl.lives << std::endl;
+	out << pl.coins << std::endl;
+	out << pl.game.keyFound << std::endl;
+	out << pl.game.coinsCollected << std::endl;
+	out << pl.game.totalCoins << std::endl;
+	out << pl.game.treasureFound << std::endl;
 	out.close();
 	return 0;
 }
 
 void printStartingScreen() {
-	cout << "Welcome to the Maze Escape game" << endl;
-	cout << "-------------------------------" << endl;
-	cout << "  Type 'r' to Register." << endl;
-	cout << "  Type 'l' to Login." << endl;
-	cout << "-------------------------------" << endl;
+	std::cout << "Welcome to the Maze Escape game" << std::endl;
+	std::cout << "-------------------------------" << std::endl;
+	std::cout << "  Type 'r' to Register." << std::endl;
+	std::cout << "  Type 'l' to Login." << std::endl;
+	std::cout << "-------------------------------" << std::endl;
 }
 
 Player handleUserLogging() {
@@ -166,64 +172,68 @@ Player handleUserLogging() {
 	printStartingScreen();
 
 	char inp;
-	cin >> inp;
+	std::cin >> inp;
+
+	inp = toLower(inp);
+
 	while (validateAccessInput(inp))
 	{
 		clearConsole();
 		printStartingScreen();
 
-		cout << "Invalid input! Try again." << endl;
+		std::cout << "Invalid input! Try again." << std::endl;
 
 		clearInputBuffer();
-		cin >> inp;
+		std::cin >> inp;
+		inp = toLower(inp);
 	}
 
 	Player player = {};
-	while (inp == 'r')
+
+	while (inp == 'l' || inp == 'r')
 	{
-		cout << "Username: ";
-
-		char username[120]; // TODO fix this
-		cin >> username;
-
-		while (validateUsernameLen(username))
-		{
-			cout << "Username too long!" << endl;
-			cin >> username;
-		}
-		while (validateExistingUser(username))
-		{
-			cout << "User already exists!" << endl;
-			cin >> username;
-		}
-
-		fCreateUser(username);
-
-		cout << "User created successfully!" << endl;
-		cout << endl;
-		printStartingScreen();
-		cin >> inp;
-	}
-	if (inp == 'l')
-	{
-		cout << "Username: ";
+		std::cout << "Username: ";
 
 		char username[121]; // TODO fix this
-		cin >> username;
+		std::cin >> username;
 
 		while (validateUsernameLen(username))
 		{
-			cout << "Username too long!" << endl;
-			cin >> username;
+			std::cout << "Username too long!" << std::endl;
+			std::cout << "Username: ";
+			std::cin >> username;
 		}
 
-		while (!validateExistingUser(username)) //TODO there is a problem when user tries to log in but there is no users in the database
+		if (inp == 'r')
 		{
-			cout << "User doesn't exist" << endl;
-			cin >> username;
-		}
+			while (validateExistingUser(username))
+			{
+				std::cout << "User already exists!" << std::endl;
+				std::cout << "Username: ";
+				std::cin >> username;
+			}
+			fCreateUser(username);
 
-		player = loadUserData(username);
+			std::cout << "User created successfully!" << std::endl;
+			std::cout << std::endl;
+			printStartingScreen();
+			std::cin >> inp;
+			inp = toLower(inp);
+
+		}
+		else if (inp == 'l')
+		{
+
+			while (!validateExistingUser(username))
+			{
+				std::cout << "User doesn't exist" << std::endl;
+				std::cout << "Username: ";
+				std::cin >> username;
+			}
+
+			player = loadUserData(username);
+			break;
+		}
 
 	}
 	clearConsole();
@@ -365,12 +375,6 @@ void printGameRules() {
 	std::cout << " D - RIGHT" << std::endl;
 }
 
-char toLower(char ch) {
-	if (ch >= 'A' && ch <= 'Z') {
-		return ch + 32;
-	}
-	return ch;
-}
 
 bool movePlayer(Position& position, char command) {
 	command = toLower(command);
@@ -392,6 +396,7 @@ bool movePlayer(Position& position, char command) {
 	}
 	return true;
 }
+
 Position findNextPortal(const Map& map, const Position& currPortal)
 {
 	Position nextPortal = {};
@@ -515,10 +520,12 @@ int main()
 
 	Player pl = handleUserLogging();
 
-	cout << "User logged-in successfully!" << endl;
-	cout << endl;
 
-	Game game = readMap(mapPath, rows, cols, level);
+
+	std::cout << "User logged-in successfully!" << std::endl;
+	std::cout << std::endl;
+
+	/*Game game = readMap(mapPath, rows, cols, level);
 	printMap(game.map);
 
 	printGameRules();
@@ -535,7 +542,7 @@ int main()
 	}
 
 	deleteMap(game.map.maze, rows);
-
+*/
 
 	return 0;
 
