@@ -1,8 +1,8 @@
 #include "Constants.cpp";
 
 struct Position {
-	unsigned short rowIndex;
-	unsigned short colIndex;
+	short rowIndex;
+	short colIndex;
 };
 
 struct Map {

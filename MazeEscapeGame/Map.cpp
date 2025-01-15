@@ -15,7 +15,7 @@ void deleteMap(char** matrix, int rows)
 	delete[] matrix;
 }
 
-void printMap(const Map& map)
+void printMap(const Map map)
 {
 	if (map.maze == nullptr)
 	{
@@ -53,30 +53,42 @@ char** initMap(int rowCount, int colCount)
 }
 
 //TODO Look into this
-char** readMap(const char* mapPath, int rowCount, int colCount)
+Game readMap(const char* mapPath, int rowCount, int colCount , int level)
 {
-	if (mapPath == nullptr) return nullptr;
-
-	std::ifstream map(mapPath);
-	if (!map.is_open())
+	Game game = {};
+	if (level > MAX_LEVEL)
 	{
-		return nullptr;
+		return game;
+	}
+	
+	if (mapPath == nullptr) return game;
+
+	std::ifstream in(mapPath);
+	if (!in.is_open())
+	{
+		return game;
 	}
 
 
-	char** matrix = initMap(rowCount, colCount);
+	game.level = level;
+	Map map = {};
+	map.rowsCount = rowCount;
+	map.colsCount = colCount;
+
+	char** maze = initMap(rowCount, colCount);
+	map.maze = maze;
 
 	int rowIdx = 0;
 
 	while (rowIdx < rowCount
-		&& map.getline(matrix[rowIdx], colCount + 1))
+		&& in.getline(maze[rowIdx], colCount + 1))
 	{
 		rowIdx++;
 	}
 
-	map.close();
+	in.close();
 
-	return matrix;
+	return game;
 }
 
 void printGameInfo(Game game, Player player) {

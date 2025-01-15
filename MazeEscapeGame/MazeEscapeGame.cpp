@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "Models.cpp"
+#include "Map.cpp"
 using namespace std;
 
 
@@ -69,6 +70,26 @@ char* customStrcat(char* destination, const char* source) {
 	return destination;
 }
 
+bool validateAccessInput(char ch) {
+	return ch != 'r' && ch != 'l';
+}
+
+bool validateUsernameLen(char* username) {
+	return my_StrLen(username) > USERNAME_MAX_LEN;
+}
+
+bool validateExistingUser(char* username) {
+	char dest[150] = "Users/"; // TODO fix this
+	std::ifstream in(customStrcat(dest, username)); // TODO fix this
+	if (in.is_open()) {
+		in.close();
+		return true;
+	}
+
+	in.close();
+	return false;
+}
+
 Player loadUserData(char* username) {
 	Player pl = {};
 
@@ -81,7 +102,7 @@ Player loadUserData(char* username) {
 
 
 	char buffer[BUFFER_SIZE];
-
+	int value = in.get();
 	in.getline(buffer, BUFFER_SIZE);
 	pl.level = my_atoi(buffer);
 
@@ -130,27 +151,6 @@ int fCreateUser(char* username) {
 	return 0;
 }
 
-
-bool validateAccessInput(char ch) {
-	return ch != 'r' && ch != 'l';
-}
-
-bool validateUsernameLen(char* username) {
-	return my_StrLen(username) > USERNAME_MAX_LEN;
-}
-
-bool validateExistingUser(char* username) {
-	char dest[150] = "Users/"; // TODO fix this
-	std::ifstream in(customStrcat(dest, username)); // TODO fix this
-	if (in.is_open()) {
-		in.close();
-		return true;
-	}
-
-	in.close();
-	return false;
-}
-
 void printStartingScreen() {
 	cout << "Welcome to the Maze Escape game" << endl;
 	cout << "-------------------------------" << endl;
@@ -158,7 +158,6 @@ void printStartingScreen() {
 	cout << "  Type 'l' to Login." << endl;
 	cout << "-------------------------------" << endl;
 }
-
 
 Player handleUserLogging() {
 
@@ -238,12 +237,12 @@ int main()
 	const int cols = 15;
 
 	char** pMatrix = readMap(mapPath, rows, cols);
-	printMatrix(pMatrix, rows, cols);
-	deleteMatrix(pMatrix, rows);
+	printMap(pMatrix, rows, cols);
+	deleteMap(pMatrix, rows);
 	return 0;*/
 
 
-	Player user = handleUserLogging();
+	/*Player user = handleUserLogging();*/
 
 	return 0;
 }
