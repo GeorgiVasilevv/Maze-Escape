@@ -1,12 +1,13 @@
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
 #include "Models.cpp"
 
-const char UPPER_FOLDER[] = "../test.txt";
-
-const char FILE_NAME[] = "PractFiles.cpp";
-
 const int BUFFER_SIZE = 1024;
+
+const char mapPath[] = "Maps/Level ";
+const int rows = 10;
+const int cols = 15;
 
 void clearConsole() {
 	std::cout << "\033[;H"; // Moves cursor to the top left
@@ -34,6 +35,19 @@ int my_StrLen(char* str) {
 	return destLen;
 }
 
+char* my_StrCpy(char* destination, const char* source) {
+
+	int length = 0;
+	while (source[length] != '\0')
+	{
+		destination[length] = source[length];
+		length++;
+	}
+
+	destination[length] = '\0';
+	return destination;
+}
+
 int my_atoi(char* str) {
 	int res = 0;
 	int strLen = my_StrLen(str);
@@ -46,7 +60,7 @@ int my_atoi(char* str) {
 	return res;
 }
 
-char* customStrcat(char* destination, const char* source) {
+char* my_StrCat(char* destination, const char* source) {
 	if (destination == nullptr || source == nullptr)
 	{
 		return nullptr;
@@ -63,6 +77,7 @@ char* customStrcat(char* destination, const char* source) {
 	}
 	destination[destLen] = '\0';
 
+
 	return destination;
 }
 
@@ -73,8 +88,30 @@ char toLower(char ch) {
 	return ch;
 }
 
+void swap(int& first, int& second)
+{
+	int temp = first;
+	first = second;
+	second = temp;
+}
+
+int getRandomNumber(int min, int max)
+{
+	if (min > max)
+	{
+		swap(min, max);
+	}
+
+	int random = min + rand() % (max - min + 1);
+	return random;
+}
+
 bool validateAccessInput(char ch) {
 	return ch != 'r' && ch != 'l';
+}
+
+bool validateLevelCommandInput(char ch) {
+	return ch != 'n' && ch != 'c';
 }
 
 bool validateUsernameLen(char* username) {
@@ -83,7 +120,7 @@ bool validateUsernameLen(char* username) {
 
 bool validateExistingUser(char* username) {
 	char dest[150] = "Users/"; // TODO fix this
-	std::ifstream in(customStrcat(dest, username)); // TODO fix this
+	std::ifstream in(my_StrCat(dest, username));
 	if (in.is_open()) {
 		in.close();
 		return true;
@@ -98,23 +135,135 @@ bool validateCoordinate(const Position& position, int rows, int cols)
 	return position.rowIndex < rows && position.colIndex < cols;
 }
 
+void printMazeToFile(char** maze, int rows, int cols, std::ofstream& out) {
+	if (maze == nullptr)
+	{
+		return;
+	}
+
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < cols; j++)
+		{
+
+			out << maze[i][j];
+		}
+		out << std::endl;
+	}
+}
+
+char** initMap(int rowCount, int colCount)
+{
+	char** matrix = new char* [rowCount];
+
+	for (int i = 0; i < rowCount; i++)
+	{
+		matrix[i] = new char[colCount];
+	}
+
+	return matrix;
+}
+
+Game readMap(const char* mapPath, int rowCount, int colCount, int level)
+{
+	Game game = {};
+	if (level > MAX_LEVEL)
+	{
+		return game;
+	}
+
+	if (mapPath == nullptr) return game;
+
+	std::ifstream in(mapPath);
+	if (!in.is_open())
+	{
+		return game;
+	}
+
+
+	Map map = {};
+	map.rowsCount = rowCount;
+	map.colsCount = colCount;
+
+	char** maze = initMap(rowCount, colCount);
+	map.maze = maze;
+
+	int rowIdx = 0;
+
+
+	for (short i = 0; i < rowCount; i++)
+	{
+		for (short j = 0; j < colCount; j++)
+		{
+			char ch;
+			in.get(ch);
+
+			if (ch == '\n')
+			{
+				in.get(ch);
+			}
+
+			if (ch == PLAYER_SYMBOL)
+			{
+				map.playerPosition.rowIndex = i;
+				map.playerPosition.colIndex = j;
+
+				map.maze[i][j] = SPACE_SYMBOL;
+			}
+			else {
+				map.maze[i][j] = ch;
+			}
+			if (ch == COIN_SYMBOL)
+			{
+				game.totalCoins++;
+			}
+		}
+	}
+	game.map = map;
+	in.close();
+
+	return game;
+}
+
+void getMapPath(int level, char* dest) {
+	if (dest == nullptr) {
+		return;
+	}
+
+	my_StrCat(dest, "Maps/Level ");
+
+	char levelChar[2];
+	levelChar[0] = level + '0';
+	levelChar[1] = '\0';
+	my_StrCat(dest, levelChar);
+
+	my_StrCat(dest, "/Map ");
+
+	int loadMapNumber = getRandomNumber(1, 2);
+	char mapChar[2];
+	mapChar[0] = loadMapNumber + '0';
+	mapChar[1] = '\0';
+	my_StrCat(dest, mapChar);
+
+	my_StrCat(dest, ".txt");
+}
+
 Player loadUserData(char* username) {
 	Player pl = {};
 
 	char dest[150] = "Users/";
-	std::ifstream in(customStrcat(dest, username));
+	std::ifstream in(my_StrCat(dest, username));
 	if (!in.is_open())
 	{
 		return pl;
 	}
 
-
 	char buffer[BUFFER_SIZE];
 	in.getline(buffer, BUFFER_SIZE);
-	pl.level = my_atoi(buffer);
+	pl.currLevel = my_atoi(buffer);
 
 	in.getline(buffer, BUFFER_SIZE);
-	pl.lives = my_atoi(buffer);
+	pl.completedLevel = my_atoi(buffer);
 
 	in.getline(buffer, BUFFER_SIZE);
 	pl.coins = my_atoi(buffer);
@@ -140,20 +289,29 @@ int fCreateUser(char* username) {
 	if (username == nullptr) return -1;
 
 	char dest[150] = "Users/"; // TODO fix this
-	char* destination = customStrcat(dest, username); // TODO fix this
+	char* destination = my_StrCat(dest, username); // TODO fix this
 
 	std::ofstream out(dest);
 
 	if (!out.is_open()) return -1;
 
 	Player pl = {};
-	out << pl.level << std::endl;
-	out << pl.lives << std::endl;
+
+	char destPath[30] = {}; // TODO fix this size
+	getMapPath(pl.currLevel, destPath);
+	Game game = readMap(destPath, rows, cols, pl.currLevel);
+
+	pl.game = game;
+	out << pl.currLevel << std::endl;
+	out << pl.completedLevel << std::endl;
 	out << pl.coins << std::endl;
 	out << pl.game.keyFound << std::endl;
 	out << pl.game.coinsCollected << std::endl;
 	out << pl.game.totalCoins << std::endl;
 	out << pl.game.treasureFound << std::endl;
+	out << pl.game.lives << std::endl;
+
+	printMazeToFile(game.map.maze, pl.game.map.rowsCount, pl.game.map.colsCount, out);
 	out.close();
 	return 0;
 }
@@ -166,23 +324,40 @@ void printStartingScreen() {
 	std::cout << "-------------------------------" << std::endl;
 }
 
-Player handleUserLogging() {
+void handleUserRegistration(char username[]) {
+	while (validateExistingUser(username)) {
+		std::cout << "User already exists!" << std::endl;
+		std::cout << "Username: ";
+		std::cin >> username;
+	}
 
+	fCreateUser(username);
+	std::cout << "User created successfully!" << std::endl;
+	std::cout << std::endl;
+}
+
+Player handleUserLogin(char username[]) {
+	while (!validateExistingUser(username)) {
+		std::cout << "User doesn't exist." << std::endl;
+		std::cout << "Username: ";
+		std::cin >> username;
+	}
+
+	return loadUserData(username);
+}
+
+Player handleUserLogging() {
 	clearConsole();
 	printStartingScreen();
 
 	char inp;
 	std::cin >> inp;
-
 	inp = toLower(inp);
 
-	while (validateAccessInput(inp))
-	{
+	while (validateAccessInput(inp)) {
 		clearConsole();
 		printStartingScreen();
-
 		std::cout << "Invalid input! Try again." << std::endl;
-
 		clearInputBuffer();
 		std::cin >> inp;
 		inp = toLower(inp);
@@ -190,52 +365,30 @@ Player handleUserLogging() {
 
 	Player player = {};
 
-	while (inp == 'l' || inp == 'r')
-	{
-		std::cout << "Username: ";
+	while (inp == 'l' || inp == 'r') {
+		char username[USERNAME_MAX_LEN];
 
-		char username[121]; // TODO fix this
+		std::cout << "Username: ";
 		std::cin >> username;
 
-		while (validateUsernameLen(username))
-		{
+		while (validateUsernameLen(username)) {
 			std::cout << "Username too long!" << std::endl;
 			std::cout << "Username: ";
 			std::cin >> username;
 		}
 
-		if (inp == 'r')
-		{
-			while (validateExistingUser(username))
-			{
-				std::cout << "User already exists!" << std::endl;
-				std::cout << "Username: ";
-				std::cin >> username;
-			}
-			fCreateUser(username);
-
-			std::cout << "User created successfully!" << std::endl;
-			std::cout << std::endl;
+		if (inp == 'r') {
+			handleUserRegistration(username);
 			printStartingScreen();
 			std::cin >> inp;
 			inp = toLower(inp);
-
 		}
-		else if (inp == 'l')
-		{
-
-			while (!validateExistingUser(username))
-			{
-				std::cout << "User doesn't exist" << std::endl;
-				std::cout << "Username: ";
-				std::cin >> username;
-			}
-
-			player = loadUserData(username);
+		else if (inp == 'l') {
+			player = handleUserLogin(username);
 			break;
 		}
-
 	}
+
 	clearConsole();
 	return player;
 }
@@ -277,84 +430,10 @@ void printMap(const Map& map)
 	}
 }
 
-char** initMap(int rowCount, int colCount)
-{
-	char** matrix = new char* [rowCount];
-
-	for (int i = 0; i < rowCount; i++)
-	{
-		matrix[i] = new char[colCount];
-	}
-
-	return matrix;
-}
-
-Game readMap(const char* mapPath, int rowCount, int colCount, int level)
-{
-	Game game = {};
-	if (level > MAX_LEVEL)
-	{
-		return game;
-	}
-
-	if (mapPath == nullptr) return game;
-
-	std::ifstream in(mapPath);
-	if (!in.is_open())
-	{
-		return game;
-	}
-
-
-	game.level = level;
-	Map map = {};
-	map.rowsCount = rowCount;
-	map.colsCount = colCount;
-
-	char** maze = initMap(rowCount, colCount);
-	map.maze = maze;
-
-	int rowIdx = 0;
-
-
-	for (short i = 0; i < rowCount; i++)
-	{
-		for (short j = 0; j < colCount; j++)
-		{
-			char ch;
-			in.get(ch);
-
-			if (ch == '\n')
-			{
-				in.get(ch);
-			}
-
-			if (ch == PLAYER_SYMBOL)
-			{
-				map.playerPosition.rowIndex = i;
-				map.playerPosition.colIndex = j;
-
-				map.maze[i][j] = SPACE_SYMBOL;
-			}
-			else {
-				map.maze[i][j] = ch;
-			}
-			if (ch == COIN_SYMBOL)
-			{
-				game.totalCoins++;
-			}
-		}
-	}
-
-	game.map = map;
-	in.close();
-
-	return game;
-}
 
 void printGameInfo(Game game, Player player) {
-	std::cout << "Level: " << game.level << std::endl;
-	std::cout << "Lives: " << player.lives << std::endl;
+	std::cout << "Level: " << player.currLevel << std::endl;
+	std::cout << "Lives: " << game.lives << std::endl;
 	std::cout << "Coins: " << game.coinsCollected << std::endl;
 	std::cout << "Key: ";
 
@@ -368,6 +447,7 @@ void printGameInfo(Game game, Player player) {
 }
 
 void printGameRules() {
+	std::cout << std::endl;
 	std::cout << "Use the keys to move:" << std::endl;
 	std::cout << " W - UP" << std::endl;
 	std::cout << " A - LEFT" << std::endl;
@@ -375,6 +455,13 @@ void printGameRules() {
 	std::cout << " D - RIGHT" << std::endl;
 }
 
+void printLevelSelection() {
+	std::cout << "Please pick one of the following:" << std::endl;
+	std::cout << "--------------------------------" << std::endl;
+	std::cout << "[C] Continue last played level." << std::endl;
+	std::cout << "[N] Play a level again." << std::endl;
+	std::cout << std::endl;
+}
 
 bool movePlayer(Position& position, char command) {
 	command = toLower(command);
@@ -472,11 +559,10 @@ void updateMaze(Player& player, Game& game, char command) {
 		return;
 	}
 
-
 	switch (maze[newPos.rowIndex][newPos.colIndex])
 	{
 	case WALL_SYMBOL:
-		player.lives--;
+		game.lives--;
 		break;
 
 	case SPACE_SYMBOL:
@@ -510,39 +596,86 @@ void updateMaze(Player& player, Game& game, char command) {
 	}
 }
 
+bool handleLevelPicking(Player& player) {
+
+	printLevelSelection();
+
+	char cmd;
+	std::cin >> cmd;
+	cmd = toLower(cmd);
+
+	while (validateLevelCommandInput(cmd))
+	{
+		clearConsole();
+		printLevelSelection();
+
+		std::cout << "Invalid input! Try again." << std::endl;
+
+		clearInputBuffer();
+		std::cin >> cmd;
+		cmd = toLower(cmd);
+	}
+	if (cmd == 'c')
+	{
+		return false;
+	}
+
+	std::cout << "Pick a level you have completed. (1 - " << player.completedLevel << ")" << std::endl;
+	int num;
+	std::cin >> num;
+
+	while (num <1 || num > player.completedLevel)
+	{
+		std::cout << "Invalid level picked. Try again." << std::endl;
+		int num;
+		std::cin >> num;
+	}
+
+	player.currLevel = num;
+	return true;
+}
 
 int main()
 {
-	const char mapPath[] = "Maps/Level 1/Map 1.txt";
-	const int rows = 10;
-	const int cols = 15;
-	const int level = 1;
+
 
 	Player pl = handleUserLogging();
 
+	/* pl.currLevel
+	 pl.completedLevel
+	 pl.lives
+	 pl.coins
+	 pl.game.keyFound
+	 pl.game.coinsCollected
+	 pl.game.totalCoins
+	 pl.game.treasureFound */
 
+	bool wantsToPlayLevelAgain = handleLevelPicking(pl);
+	if (wantsToPlayLevelAgain)
+	{
+		Game game = readMap(mapPath, rows, cols, pl.currLevel);
+		pl.game = game;
+	}
 
-	std::cout << "User logged-in successfully!" << std::endl;
-	std::cout << std::endl;
-
-	/*Game game = readMap(mapPath, rows, cols, level);
-	printMap(game.map);
+	clearConsole();
+	printMap(pl.game.map);
 
 	printGameRules();
 	char inp;
-	cin >> inp;
+	std::cin >> inp;
 
 	while (inp != 'E')
 	{
-		updateMaze(pl, game, inp);
+		updateMaze(pl, pl.game, inp);
 		clearConsole();
-		printMap(game.map);
+		printMap(pl.game.map);
+		printGameRules();
 
-		cin >> inp;
+		std::cin >> inp;
 	}
 
-	deleteMap(game.map.maze, rows);
-*/
+	deleteMap(pl.game.map.maze, rows);
+
 
 	return 0;
 
