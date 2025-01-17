@@ -5,7 +5,6 @@
 
 const int BUFFER_SIZE = 1024;
 
-const char mapPath[] = "Maps/Level ";
 const int rows = 10;
 const int cols = 15;
 
@@ -250,6 +249,7 @@ void getMapPath(int level, char* dest) {
 
 Player loadUserData(char* username) {
 	Player pl = {};
+	my_StrCat(pl.name, username);
 
 	char dest[150] = "Users/";
 	std::ifstream in(my_StrCat(dest, username));
@@ -258,7 +258,15 @@ Player loadUserData(char* username) {
 		return pl;
 	}
 
+	Game userGame = readMap(dest, pl.game.map.rowsCount, pl.game.map.colsCount, pl.currLevel); // I really just need this to read the map so i improvised.
+	pl.game = userGame;
+
+
 	char buffer[BUFFER_SIZE];
+	for (int i = 0; i < pl.game.map.rowsCount; i++)
+	{
+		in.getline(buffer, BUFFER_SIZE);
+	}
 	in.getline(buffer, BUFFER_SIZE);
 	pl.currLevel = my_atoi(buffer);
 
@@ -280,7 +288,17 @@ Player loadUserData(char* username) {
 	in.getline(buffer, BUFFER_SIZE);
 	pl.game.treasureFound = my_atoi(buffer);
 
+	in.getline(buffer, BUFFER_SIZE);
+	pl.game.lives = my_atoi(buffer);
+
+	in.getline(buffer, BUFFER_SIZE);
+	pl.game.map.playerPosition.rowIndex = my_atoi(buffer);
+
+	in.getline(buffer, BUFFER_SIZE);
+	pl.game.map.playerPosition.colIndex = my_atoi(buffer);
+
 	in.close();
+
 	return pl;
 }
 
@@ -300,6 +318,7 @@ int fCreateUser(char* username) {
 	char destPath[30] = {}; // TODO fix this size
 	getMapPath(pl.currLevel, destPath);
 	Game game = readMap(destPath, rows, cols, pl.currLevel);
+	printMazeToFile(game.map.maze, pl.game.map.rowsCount, pl.game.map.colsCount, out);
 
 	pl.game = game;
 	out << pl.currLevel << std::endl;
@@ -310,8 +329,9 @@ int fCreateUser(char* username) {
 	out << pl.game.totalCoins << std::endl;
 	out << pl.game.treasureFound << std::endl;
 	out << pl.game.lives << std::endl;
+	out << pl.game.map.playerPosition.rowIndex << std::endl;
+	out << pl.game.map.playerPosition.colIndex << std::endl;
 
-	printMazeToFile(game.map.maze, pl.game.map.rowsCount, pl.game.map.colsCount, out);
 	out.close();
 	return 0;
 }
@@ -429,7 +449,6 @@ void printMap(const Map& map)
 		std::cout << std::endl;
 	}
 }
-
 
 void printGameInfo(Game game, Player player) {
 	std::cout << "Level: " << player.currLevel << std::endl;
@@ -637,42 +656,55 @@ bool handleLevelPicking(Player& player) {
 
 int main()
 {
-
-
 	Player pl = handleUserLogging();
-
-	/* pl.currLevel
-	 pl.completedLevel
-	 pl.lives
-	 pl.coins
-	 pl.game.keyFound
-	 pl.game.coinsCollected
-	 pl.game.totalCoins
-	 pl.game.treasureFound */
 
 	bool wantsToPlayLevelAgain = handleLevelPicking(pl);
 	if (wantsToPlayLevelAgain)
 	{
-		Game game = readMap(mapPath, rows, cols, pl.currLevel);
+		char destPath[30] = {}; // TODO fix this size
+		getMapPath(pl.currLevel, destPath);
+		Game game = readMap(destPath, rows, cols, pl.currLevel);
 		pl.game = game;
 	}
 
-	clearConsole();
-	printMap(pl.game.map);
-
-	printGameRules();
 	char inp;
-	std::cin >> inp;
-
-	while (inp != 'E')
+	while (true)
 	{
-		updateMaze(pl, pl.game, inp);
 		clearConsole();
+		printGameInfo(pl.game, pl);
 		printMap(pl.game.map);
-		printGameRules();
 
+		if (pl.game.treasureFound)
+		{
+			pl.coins += pl.game.coinsCollected;
+			if (pl.currLevel != MAX_LEVEL && pl.currLevel == pl.completedLevel)
+			{
+				pl.completedLevel++;
+				pl.currLevel++;
+			}
+			std::cout << "Congratulations you completed the level!" << std::endl;
+			break;
+		}
+		if (pl.game.lives == 0)
+		{
+			pl.game.lives = DEFAULT_LIVES;
+			std::cout << "You died! Better luck next time!" << std::endl;
+			break;
+		}
+
+		printGameRules();
 		std::cin >> inp;
+		if (toLower(inp) == QUIT_SYMBOL)
+		{
+			break;
+		}
+
+		updateMaze(pl, pl.game, inp);
 	}
+
+
+
+
 
 	deleteMap(pl.game.map.maze, rows);
 
