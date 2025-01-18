@@ -2,4 +2,5 @@
 C:\Users\User\Maze-Escape\MazeEscapeGame\Models.cpp(1,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   (compiling source file 'MazeEscapeGame.cpp')
   
+C:\Users\User\Maze-Escape\MazeEscapeGame\MazeEscapeGame.cpp(99,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   MazeEscapeGame.vcxproj -> C:\Users\User\Maze-Escape\x64\Debug\MazeEscapeGame.exe

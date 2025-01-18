@@ -5,7 +5,7 @@ const char KEY_SYMBOL = '&';
 const char TREASURE_SYMBOL = 'X';
 const char PORTAL_SYMBOL = '%';
 const char SPACE_SYMBOL = ' ';
-const char QUIT_SYMBOL = 'Q';
+const char QUIT_SYMBOL = 'q';
 
 const int USERNAME_MAX_LEN = 50;
 const int DEFAULT_LIVES = 3;

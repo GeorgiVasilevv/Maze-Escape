@@ -94,13 +94,18 @@ void swap(int& first, int& second)
 	second = temp;
 }
 
+void initRandom()
+{
+	srand(time(0));
+}
+
 int getRandomNumber(int min, int max)
 {
 	if (min > max)
 	{
 		swap(min, max);
 	}
-
+	initRandom();
 	int random = min + rand() % (max - min + 1);
 	return random;
 }
@@ -472,6 +477,8 @@ void printGameRules() {
 	std::cout << " A - LEFT" << std::endl;
 	std::cout << " S - DOWN" << std::endl;
 	std::cout << " D - RIGHT" << std::endl;
+	std::cout << " ---------" << std::endl;
+	std::cout << " Press [Q] to Quit" << std::endl;
 }
 
 void printLevelSelection() {
@@ -646,6 +653,7 @@ bool handleLevelPicking(Player& player) {
 	while (num <1 || num > player.completedLevel)
 	{
 		std::cout << "Invalid level picked. Try again." << std::endl;
+		clearInputBuffer();
 		int num;
 		std::cin >> num;
 	}
@@ -654,60 +662,106 @@ bool handleLevelPicking(Player& player) {
 	return true;
 }
 
+void saveProgress(const Player& pl) {
+	char dest[150] = "Users/";
+	std::ofstream out(my_StrCat(dest, pl.name));
+
+	if (!out.is_open()) {
+		std::cout << "Error: Unable to save user data!" << std::endl;
+		return;
+	}
+
+	printMazeToFile(pl.game.map.maze, pl.game.map.rowsCount, pl.game.map.colsCount, out);
+
+	out << pl.currLevel << std::endl;
+	out << pl.completedLevel << std::endl;
+	out << pl.coins << std::endl;
+	out << pl.game.keyFound << std::endl;
+	out << pl.game.coinsCollected << std::endl;
+	out << pl.game.totalCoins << std::endl;
+	out << pl.game.treasureFound << std::endl;
+	out << pl.game.lives << std::endl;
+	out << pl.game.map.playerPosition.rowIndex << std::endl;
+	out << pl.game.map.playerPosition.colIndex << std::endl;
+
+	out.close();
+}
+
+
+
 int main()
 {
 	Player pl = handleUserLogging();
 
-	bool wantsToPlayLevelAgain = handleLevelPicking(pl);
-	if (wantsToPlayLevelAgain)
-	{
-		char destPath[30] = {}; // TODO fix this size
-		getMapPath(pl.currLevel, destPath);
-		Game game = readMap(destPath, rows, cols, pl.currLevel);
-		pl.game = game;
-	}
-
-	char inp;
 	while (true)
 	{
-		clearConsole();
-		printGameInfo(pl.game, pl);
-		printMap(pl.game.map);
 
-		if (pl.game.treasureFound)
+		bool wantsToPlayLevelAgain = handleLevelPicking(pl);
+		if (wantsToPlayLevelAgain)
 		{
-			pl.coins += pl.game.coinsCollected;
-			if (pl.currLevel != MAX_LEVEL && pl.currLevel == pl.completedLevel)
+			char destPath[30] = {}; // TODO fix this size
+			getMapPath(pl.currLevel, destPath);
+			Game game = readMap(destPath, rows, cols, pl.currLevel);
+			pl.game = game;
+		}
+
+		char inp;
+		bool hasQuit = true;
+		bool hasWon = false;
+		while (true)
+		{
+			clearConsole();
+			printGameInfo(pl.game, pl);
+			printMap(pl.game.map);
+
+			if (pl.game.treasureFound)
 			{
-				pl.completedLevel++;
-				pl.currLevel++;
+				pl.coins += pl.game.coinsCollected;
+				if (pl.currLevel != MAX_LEVEL && pl.currLevel == pl.completedLevel)
+				{
+					pl.completedLevel++;
+					pl.currLevel++;
+				}
+				std::cout << "Congratulations you completed the level!" << std::endl;
+				hasQuit = false;
+				hasWon = true;
+				break;
 			}
-			std::cout << "Congratulations you completed the level!" << std::endl;
-			break;
+			if (pl.game.lives == 0)
+			{
+				std::cout << "You died! Better luck next time!" << std::endl;
+				hasQuit = false;
+				break;
+			}
+
+			printGameRules();
+			std::cin >> inp;
+			if (toLower(inp) == QUIT_SYMBOL)
+			{
+				break;
+			}
+
+			updateMaze(pl, pl.game, inp);
 		}
-		if (pl.game.lives == 0)
+
+		if (pl.completedLevel == MAX_LEVEL && hasWon)
 		{
-			pl.game.lives = DEFAULT_LIVES;
-			std::cout << "You died! Better luck next time!" << std::endl;
+			std::cout << "Congratulations you won the game!" << std::endl;
 			break;
 		}
 
-		printGameRules();
-		std::cin >> inp;
-		if (toLower(inp) == QUIT_SYMBOL)
+		if (!hasQuit)
 		{
-			break;
+			char destPath[30] = {}; // TODO fix this size
+			getMapPath(pl.currLevel, destPath);
+			Game game = readMap(destPath, rows, cols, pl.currLevel);
+			pl.game = game;
 		}
 
-		updateMaze(pl, pl.game, inp);
+		saveProgress(pl);
+
 	}
-
-
-
-
-
 	deleteMap(pl.game.map.maze, rows);
-
 
 	return 0;
 
