@@ -115,7 +115,7 @@ bool validateAccessInput(char ch) {
 }
 
 bool validateLevelCommandInput(char ch) {
-	return ch != 'n' && ch != 'c';
+	return ch != 'n' && ch != 'c' && ch != 'q';
 }
 
 bool validateUsernameLen(char* username) {
@@ -645,6 +645,10 @@ bool handleLevelPicking(Player& player) {
 	{
 		return false;
 	}
+	if (cmd == 'q')
+	{
+		return false;
+	}
 
 	std::cout << "Pick a level you have completed. (1 - " << player.completedLevel << ")" << std::endl;
 	int num;
@@ -687,82 +691,104 @@ void saveProgress(const Player& pl) {
 	out.close();
 }
 
-
-
 int main()
 {
-	Player pl = handleUserLogging();
-
 	while (true)
 	{
 
-		bool wantsToPlayLevelAgain = handleLevelPicking(pl);
-		if (wantsToPlayLevelAgain)
-		{
-			char destPath[30] = {}; // TODO fix this size
-			getMapPath(pl.currLevel, destPath);
-			Game game = readMap(destPath, rows, cols, pl.currLevel);
-			pl.game = game;
-		}
 
-		char inp;
-		bool hasQuit = true;
-		bool hasWon = false;
+		Player pl = handleUserLogging();
+
 		while (true)
 		{
-			clearConsole();
-			printGameInfo(pl.game, pl);
-			printMap(pl.game.map);
 
-			if (pl.game.treasureFound)
+
+			bool wantsToPlayLevelAgain = handleLevelPicking(pl);
+			if (wantsToPlayLevelAgain)
 			{
-				pl.coins += pl.game.coinsCollected;
-				if (pl.currLevel != MAX_LEVEL && pl.currLevel == pl.completedLevel)
+				char destPath[30] = {}; // TODO fix this size
+				getMapPath(pl.currLevel, destPath);
+				Game game = readMap(destPath, rows, cols, pl.currLevel);
+				pl.game = game;
+			}
+
+			char inp;
+			bool hasQuit = true;
+			bool hasWon = false;
+			while (true)
+			{
+				clearConsole();
+				printGameInfo(pl.game, pl);
+				printMap(pl.game.map);
+
+				if (pl.game.treasureFound)
 				{
-					pl.completedLevel++;
-					pl.currLevel++;
+					pl.coins += pl.game.coinsCollected;
+					if (pl.currLevel != MAX_LEVEL && pl.currLevel == pl.completedLevel)
+					{
+						pl.completedLevel++;
+						pl.currLevel++;
+					}
+					std::cout << "Congratulations you completed the level!" << std::endl;
+					hasQuit = false;
+					hasWon = true;
+					break;
 				}
-				std::cout << "Congratulations you completed the level!" << std::endl;
-				hasQuit = false;
-				hasWon = true;
-				break;
+				if (pl.game.lives == 0)
+				{
+					std::cout << "You died! Better luck next time!" << std::endl;
+					hasQuit = false;
+					break;
+				}
+
+				printGameRules();
+				std::cin >> inp;
+				if (toLower(inp) == QUIT_SYMBOL)
+				{
+					break;
+				}
+
+				updateMaze(pl, pl.game, inp);
 			}
-			if (pl.game.lives == 0)
+
+			if (pl.completedLevel == MAX_LEVEL && hasWon)
 			{
-				std::cout << "You died! Better luck next time!" << std::endl;
-				hasQuit = false;
+				std::cout << "Congratulations you won the game!" << std::endl;
 				break;
 			}
 
-			printGameRules();
-			std::cin >> inp;
-			if (toLower(inp) == QUIT_SYMBOL)
+			if (!hasQuit)
+			{
+				char destPath[30] = {}; // TODO fix this size
+				getMapPath(pl.currLevel, destPath);
+				Game game = readMap(destPath, rows, cols, pl.currLevel);
+				pl.game = game;
+			}
+
+			saveProgress(pl);
+
+			std::cout << std::endl;
+			std::cout << "Would you like to return to the main menu? [Q]" << std::endl;
+			char inpt;
+			std::cin >> inpt;
+			inpt = toLower(inpt);
+			if (inpt == QUIT_SYMBOL)
 			{
 				break;
 			}
 
-			updateMaze(pl, pl.game, inp);
 		}
 
-		if (pl.completedLevel == MAX_LEVEL && hasWon)
+		deleteMap(pl.game.map.maze, rows);
+		std::cout << "Would you like to return to QUIT the game? [Q]" << std::endl;
+		char inpt;
+		std::cin >> inpt;
+		inpt = toLower(inpt);
+		if (inpt == QUIT_SYMBOL)
 		{
-			std::cout << "Congratulations you won the game!" << std::endl;
 			break;
 		}
-
-		if (!hasQuit)
-		{
-			char destPath[30] = {}; // TODO fix this size
-			getMapPath(pl.currLevel, destPath);
-			Game game = readMap(destPath, rows, cols, pl.currLevel);
-			pl.game = game;
-		}
-
-		saveProgress(pl);
-
 	}
-	deleteMap(pl.game.map.maze, rows);
-
 	return 0;
 
 }
