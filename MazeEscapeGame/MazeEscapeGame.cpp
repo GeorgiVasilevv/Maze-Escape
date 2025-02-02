@@ -468,7 +468,7 @@ Player handleUserLogging() {
 
 	Player player = {};
 
-	while (inp == 'l' || inp == 'r') {
+	while (!validateAccessInput(inp)) {
 		char username[USERNAME_MAX_LEN];
 
 		std::cout << "Username: ";
@@ -520,7 +520,7 @@ bool handleLevelPicking(Player& player) {
 		return false;
 	}
 
-	std::cout << "Pick a level you have completed. (1 - " << player.completedLevel << ")" << std::endl;
+	std::cout << "Pick a level you have completed or want to complete. (1 - " << player.completedLevel << ")" << std::endl;
 	int num;
 	std::cin >> num;
 
@@ -729,10 +729,13 @@ int main()
 				if (pl.game.treasureFound)
 				{
 					pl.coins += pl.game.coinsCollected;
-					if (pl.currLevel != MAX_LEVEL && pl.currLevel == pl.completedLevel)
+					if (pl.currLevel != MAX_LEVEL + 1 && pl.currLevel == pl.completedLevel)
 					{
+						if (pl.currLevel != MAX_LEVEL)
+						{
+							pl.currLevel++;
+						}
 						pl.completedLevel++;
-						pl.currLevel++;
 					}
 					std::cout << "Congratulations you completed the level!" << std::endl;
 					hasQuit = false;
@@ -756,9 +759,11 @@ int main()
 				updateMaze(pl, pl.game, inp);
 			}
 
-			if (pl.completedLevel == MAX_LEVEL && hasWon)
+			if (pl.completedLevel == MAX_LEVEL + 1 && hasWon)
 			{
+				std::cout << "---------------------------------" << std::endl;
 				std::cout << "Congratulations you won the game!" << std::endl;
+				std::cout << "---------------------------------" << std::endl;
 				break;
 			}
 
